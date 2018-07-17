@@ -15,15 +15,15 @@ function getTransformedCards() {
             name: rawCard.name,
             rarity: rawCard.rarity,
             factionId: rawCard.cardClass,
-            cost: rawCard.cost,
+            cost: rawCard.cost || null,
             types: [rawCard.type],
             subtypes: rawCard.race ? [rawCard.race] : [],
-            text: rawCard.text,
+            text: rawCard.text || null,
             // some fields are stored in a "printing" since some games print cards
             // multiple times (like Magic) with different flavor/artists
             printings: [{
-                artist: rawCard.artist,
-                flavorText: rawCard.flavor,
+                artist: rawCard.artist || null,
+                flavorText: rawCard.flavor || null,
                 // see https://hearthstonejson.com/docs/images.html
                 image: `https://art.hearthstonejson.com/v1/512x/${rawCard.id}.webp`,
                 printedIn: rawCard.set
@@ -49,6 +49,6 @@ async function addTransformedCardsToFirebase(transformedCards) {
     console.log("Let's import some Hearthstone data!");
     const transformedCards = getTransformedCards();
     console.log("Transformed the data...");
-    addTransformedCardsToFirebase(transformedCards);
+    await addTransformedCardsToFirebase(transformedCards);
     console.log("Added data to Firebase. All done!");
 })();
