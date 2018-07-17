@@ -5,6 +5,7 @@ admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = admin.firestore();
 
 const rawData = require('./cards.collectible.json');
+const algolia = require('algoliasearch');
 
 function getTransformedCards() {
     const transformedCards = [];
@@ -19,6 +20,7 @@ function getTransformedCards() {
             types: [rawCard.type],
             subtypes: rawCard.race ? [rawCard.race] : [],
             text: rawCard.text || null,
+            thumbnail: `https://art.hearthstonejson.com/v1/512x/${rawCard.id}.webp`,
             // some fields are stored in a "printing" since some games print cards
             // multiple times (like Magic) with different flavor/artists
             printings: [{
@@ -43,12 +45,27 @@ async function addTransformedCardsToFirebase(transformedCards) {
             .doc(card.id)
             .set(card);
     }
+
+    console.log("Added data to Firebase.");
+}
+
+function createSearchIndex(cards) {
+    const algoliaClient = algolia(process.env.ALGOLIA_APPID, process.env.ALGOLIA_APIKEY);
+    const indexName = "cards";
+    for (const card of cards) {
+        card.objectID = card.id;
+    }
+
+    algoliaClient.deleteIndex(indexName, (err, result) => {
+        const index = algoliaClient.initIndex(indexName);
+        index.saveObjects(cards);
+    });
 }
 
 (async () => {
-    console.log("Let's import some Hearthstone data!");
+    // console.log("Let's import some Hearthstone data!");
     const transformedCards = getTransformedCards();
-    console.log("Transformed the data...");
-    await addTransformedCardsToFirebase(transformedCards);
-    console.log("Added data to Firebase. All done!");
+    // await addTransformedCardsToFirebase(transformedCards);
+    createSearchIndex(transformedCards);
+    console.log("All done!");
 })();
