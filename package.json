@@ -1,0 +1,26 @@
+{
+  "name": "nucard-hearthstone",
+  "version": "1.0.0",
+  "description": "A NuCard-compatible API for Hearthstone, the digital CCG from Blizzard Entertainment. Learn more about NuCard at nucard.com.",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nucard/hearthstone-importer.git"
+  },
+  "keywords": [
+    "hearthstone",
+    "nucard"
+  ],
+  "author": "Jammerware",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nucard/hearthstone-importer/issues"
+  },
+  "homepage": "https://github.com/nucard/hearthstone-importer#readme",
+  "dependencies": {
+    "firebase-admin": "^5.12.1"
+  }
+}
