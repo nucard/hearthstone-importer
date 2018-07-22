@@ -7,6 +7,27 @@ const db = admin.firestore();
 const rawData = require('./cards.collectible.json');
 const algolia = require('algoliasearch');
 
+const setNames = {
+    "BRM": "Blackrock Mountain",
+    "CORE": "Basic and Free Cards",
+    "EXPERT1": "Classic",
+    "HERO_SKINS": "Heroes",
+    "LOE": "The League of Explorers",
+    "OG": "Whispers of the Old Gods",
+    "GANGS": "The Mean Streets of Gadgetzan",
+    "GILNEAS": "The Witchwood",
+    "GVG": "Goblins vs. Gnomes",
+    "HOF": "Hall of Fame",
+    "ICECROWN": "The Frozen Throne",
+    "LOOTAPALOOZA": "Kobolds & Catacombs",
+    "KARA": "One Night in Karazhan",
+    "NAXX": "Curse of Naxxramas",
+    "PROMO": "Promotional",
+    "REWARD": "Reward",
+    "TGT": "The Grand Tournament",
+    "UNGORO": "Journey to Un'Goro",
+}
+
 function getTransformedCards() {
     const transformedCards = [];
 
@@ -20,25 +41,26 @@ function getTransformedCards() {
             types: [rawCard.type],
             subtypes: rawCard.race ? [rawCard.race] : [],
             text: rawCard.text || null,
-            thumbnail: `https://art.hearthstonejson.com/v1/512x/${rawCard.id}.webp`,
-            // some fields are stored in a "printing" since some games print cards
-            // multiple times (like Magic) with different flavor/artists
+            thumbnail: `https://art.hearthstonejson.com/v1/256x/${rawCard.id}.webp`,
             printings: [{
                 artist: rawCard.artist || null,
                 flavorText: rawCard.flavor || null,
-                // see https://hearthstonejson.com/docs/images.html
-                image: `https://art.hearthstonejson.com/v1/512x/${rawCard.id}.webp`,
-                printedIn: rawCard.set
+                image: `https://art.hearthstonejson.com/v1/render/latest/enUS/256x/${rawCard.id}.png`,
+                printedIn: setNames[rawCard.set] || rawCard.set
             }]
         });
+
+        if (!setNames[rawCard.set]) {
+            console.log(`WHUH OH: Set ${rawCard.set} is new and not in the list of sets. Check it!`);
+        }
     }
 
-    console.log(`Transformed ${transformedCards.length} cards. One of them looks like this!`);
-    console.log(transformedCards[0]);
+    console.log(`Transformed ${transformedCards.length} cards`);
     return transformedCards;
 }
 
 async function addTransformedCardsToFirebase(transformedCards) {
+    console.log('Adding cards to Firebase...');
     for (const card of transformedCards) {
         await db
             .collection('cards')
@@ -46,7 +68,7 @@ async function addTransformedCardsToFirebase(transformedCards) {
             .set(card);
     }
 
-    console.log("Added data to Firebase.");
+    console.log("Added cards to Firebase.");
 }
 
 function createSearchIndex(cards) {
@@ -63,7 +85,7 @@ function createSearchIndex(cards) {
 }
 
 (async () => {
-    // console.log("Let's import some Hearthstone data!");
+    console.log("Let's import some Hearthstone data!");
     const transformedCards = getTransformedCards();
     // await addTransformedCardsToFirebase(transformedCards);
     createSearchIndex(transformedCards);
